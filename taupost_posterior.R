@@ -3,8 +3,8 @@
 #' @param beta The vector of event-study coefficients
 #' @param Sigma The variance-covariance matrix of the event-study coefficients
 #' @param Vdelta The prior variance-covariance matrix on delta (the violation of PT)
-#' @param Vtaupost (Optional) The prior variance-covariance matrix on the vector of treatment effects.
-#' By default, we use an uninformative prior, implemented by setting taupost to be 10^8 * the identity matrix
+#' @param Vtaupost (Optional) The prior variance-covariance matrix on the vector of treatment effects. 
+#' Null signifies uninformative prior. Default is NULL.
 #' @param mutaupost (Optional) The prior mean for taupost. Default is vector of zeros (which shouldn't matter if using uninformative prior)
 #' @param mudelta (Optional) The prior mean for delta. Default is a vector of zeros
 
@@ -12,7 +12,7 @@ taupost_posterior <- function(beta,
                               Sigma, 
                               Vdelta,
                               mudelta = matrix(0,ncol = 1, nrow = length(tVec)),
-                              Vtaupost = 10^8 * diag( sum(tVec - referencePeriod > 0) ) ,
+                              Vtaupost = NULL,
                               mutaupost = matrix(0, nrow =sum(tVec - referencePeriod > 0), ncol = 1),
                               tVec, 
                               referencePeriod = 0){
@@ -23,6 +23,8 @@ taupost_posterior <- function(beta,
   
   numPrePeriods <- length(prePeriodIndices)
   numPostPeriods <- length(postPeriodIndices)
+  
+  if(!is.null(Vtaupost)){
   
   #Create a vcv for the prior on tau = (0',taupost')
   Vtau <- matrix(0, 
@@ -55,6 +57,61 @@ taupost_posterior <- function(beta,
   tauPostPosterior <- mutaupost + Vbetatau %*% solve(Vbeta) %*% (betaPosterior - mubeta)
   VtauPostPosterior <- (Vtaupost - Vbetatau %*% solve(Vbeta) %*% t(Vbetatau) ) +
     Vbetatau %*% solve(Vbeta) %*% VbetaPosterior %*% t(Vbetatau %*% solve(Vbeta))
+  
+  }else{
+    Sigmapre <- Sigma[prePeriodIndices, prePeriodIndices]
+    Sigmapost <- Sigma[postPeriodIndices, postPeriodIndices]
+    Sigmaprepost <- Sigma[prePeriodIndices, postPeriodIndices]
+    GammaSigma <- solve(Sigmapre) %*% Sigmaprepost
+    
+    Vpre <- Vdelta[prePeriodIndices, prePeriodIndices]
+    Vpost <- Vdelta[postPeriodIndices, postPeriodIndices]
+    Vprepost <- Vdelta[prePeriodIndices, postPeriodIndices]
+    GammaV <- solve(Vpre) %*% Vprepost  
+    
+    mupre <- mudelta[prePeriodIndices]
+    mupost <- mudelta[postPeriodIndices]
+    
+    betapre <- beta[prePeriodIndices]
+    betapost <- beta[postPeriodIndices]
+    
+    betapreposterior <- solve( solve(Sigmapre) + solve(Vpre)  ) %*% 
+                         (solve(Sigmapre) %*% betapre + solve(Vpre) %*% mupre)
+    
+    betapostposterior <- betapost - t(GammaSigma) %*% (betapre - betapreposterior)
+    
+    betaposterior <- matrix(NA, nrow = numPrePeriods + numPostPeriods)
+    betaposterior[prePeriodIndices] <- betapreposterior
+    betaposterior[postPeriodIndices] <- betapostposterior
+    
+    Vbetapreposterior <- solve( solve(Sigmapre) + solve(Vpre)  ) 
+    Vbetapostposterior <- Sigmapost - t(Sigmaprepost) %*% solve(Sigmapre) %*% Sigmaprepost +
+                          t(GammaSigma) %*% Vbetapreposterior %*% GammaSigma
+    
+    Vbetaprepostposterior <- t(GammaSigma) %*% Vbetapreposterior
+    
+    Vbetaposterior <- matrix(NA,
+                             nrow = numPrePeriods + numPostPeriods,
+                             ncol = numPrePeriods + numPostPeriods
+                             )
+    
+    Vbetaposterior[prePeriodIndices, prePeriodIndices] <- Vbetapreposterior
+    Vbetaposterior[postPeriodIndices, postPeriodIndices] <- Vbetapostposterior
+    Vbetaposterior[prePeriodIndices, postPeriodIndices] <- Vbetaprepostposterior
+    Vbetaposterior[postPeriodIndices, prePeriodIndices] <- t(Vbetaprepostposterior)
+    
+    tauPostPosterior <- betapostposterior - mupost - t(GammaV) %*% (betapreposterior - mupre)
+    
+    #Weights on betapre and betapost that give E[delta | beta]
+    Wpost <- diag(numPostPeriods)
+    Wpre <- t(GammaV)
+    W <- matrix(NA, ncol = numPrePeriods + numPostPeriods, nrow = numPostPeriods)
+    W[, prePeriodIndices] <- Wpre
+    W[, postPeriodIndices] <- Wpost
+    
+    VtauPostPosterior <- Vpost - t(Vprepost) %*% solve(Vpre) %*% Vprepost +
+                        W %*% Vbetaposterior %*% t(W)
+  }
   
   summaryTable <- data.frame(relativeTime = relativeTime[postPeriodIndices],
                              originalEstimate = beta[postPeriodIndices],

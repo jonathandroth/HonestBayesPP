@@ -11,20 +11,42 @@ create_V_AR1 <- function(rho,sigma,tVec, referencePeriod = 0){
   V <- matrix(nrow = numPeriods,
               ncol = numPeriods)
   
-  for(i in 1:numPeriods){
-    for(j in i:numPeriods){
-      t <- relativeTime[i]
-      tprime <- relativeTime[j]
-      
-      vij <- (rho^abs(t-tprime) - rho^abs(t) - rho^abs(tprime) +1)/(1-rho^2) * sigma^2
-      V[i,j] <- vij
-      
-      if(i != j){
-        V[j,i] <- vij
+  if(rho != 1){
+    #AR(1) case
+    for(i in 1:numPeriods){
+      for(j in i:numPeriods){
+        t <- relativeTime[i]
+        tprime <- relativeTime[j]
+        
+        vij <- (rho^abs(t-tprime) - rho^abs(t) - rho^abs(tprime) +1)/(1-rho^2) * sigma^2
+        V[i,j] <- vij
+        
+        if(i != j){
+          V[j,i] <- vij
+        }
       }
     }
-  }
-  
+  }else{
+    #Random walk case
+    for(i in 1:numPeriods){
+      for(j in i:numPeriods){
+        t <- relativeTime[i]
+        tprime <- relativeTime[j]
+        
+        if(sign(t) != sign(tprime)){
+          vij <- 0
+        }else{
+          vij <- pmin( abs(t), abs(tprime) ) * sigma^2
+        }
+        
+        V[i,j] <- vij
+        if(i != j){
+          V[j,i] <- vij
+        }
+        
+      }
+    }  
+  }  
   return(V)
 }
 

@@ -36,22 +36,25 @@ taupost_posterior(beta = beta,
   ylim(-0.2,0.4)
 
 
+## The code below calculates the posterior in two ways:
+# posterior1 uses an 'informative' prior for taupost with very large variance
+# posterior2 uses an 'uninformatve' prior
 
-# posterior1 <- taupost_posterior(beta = beta,
-#                                 Sigma = sigma,
-#                                 Vdelta = V,
-#                                 Vtaupost = 10^12 * diag(4),
-#                                 tVec = tVec,
-#                                 referencePeriod = referencePeriod)
-# 
-# 
-# posterior2 <- taupost_posterior(beta = beta,
-#                                 Sigma = sigma,
-#                                 Vdelta = V,
-#                                 tVec = tVec, Vtaupost = NULL,
-#                                 referencePeriod = referencePeriod)
-# 
-# posterior1$summaryTable
-# posterior2$summaryTable
-# 
-# 
+posterior1 <- taupost_posterior(beta = beta,
+                                Sigma = sigma,
+                                Vdelta = V,
+                                Vtaupost = 10^12 * diag(4),
+                                tVec = tVec,
+                                referencePeriod = referencePeriod)
+
+
+posterior2 <- taupost_posterior(beta = beta,
+                                Sigma = sigma,
+                                Vdelta = V,
+                                tVec = tVec, Vtaupost = NULL,
+                                referencePeriod = referencePeriod)
+
+posterior1$summaryTable
+posterior2$summaryTable
+
+

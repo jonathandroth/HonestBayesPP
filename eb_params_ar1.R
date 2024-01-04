@@ -4,8 +4,9 @@
 #' is iid N(mu,sigma^2), i.e. that w_t follows a random walk with normal innovations
 #' Given pre-treatment estimates, we compute the maximum likelihood estimates of w and sigma^2
 
-eb_params_ar1 <- function(w, SigmaW){
-  
+eb_params_ar1 <- function(w, SigmaW, useMLE = TRUE){
+
+if(useMLE){  
   k <- length(w)
   onevec <- matrix(1, nrow = k, ncol =1)
   A_sigmasq <- function(sigmasq){ return( SigmaW + sigmasq * diag(k)) }
@@ -33,6 +34,16 @@ eb_params_ar1 <- function(w, SigmaW){
   }
   
   mu <- mu_sigmasq(sigmasq)
+  
+}else{
+  # mu <- mean(w)
+  # sigmasq <- mean(w^2 - diag(SigmaW) - mu^2 )
+  mu <- mean(w)
+  onevec <- matrix(data = 1, nrow = length(w), ncol = 1)
+  sigmasq <- 
+  1/length(w) * ( t(onevec) %*%(w - mu*onevec) %*% t(w - mu*onevec) %*% onevec
+                  - t(onevec) %*% SigmaW %*% onevec )
+}
   
   return(list(mu = mu, sigmasq = sigmasq))
 }

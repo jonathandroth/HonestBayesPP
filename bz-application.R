@@ -18,22 +18,29 @@ V <- create_V_AR1(rho = rho,
                   sigma = sqrt(1-rho^2)* 0.063,
                   tVec = tVec)
 
+posteriorResults <-
 taupost_posterior(beta = beta,
                   Sigma = sigma,
                   Vdelta = V,
                   tVec = tVec,
-                  referencePeriod = referencePeriod)$eventPlot +
-  ylim(-0.2,0.4)
+                  referencePeriod = referencePeriod)
+
+
+eventPlot_withPosterior <-
+  posteriorResults$eventPlot +
+  ylim(-0.2,0.4) +
+  scale_x_continuous(breaks = -4:4)
+
+ggsave(here("Figures/bz-with-posterior.png"),
+       width = 6, height = 4)
+
+eventPlot_withoutPosterior <-  
+  eventPlot_withPosterior + 
+  ggplot2::scale_color_manual(values = c(Original = "#D95F02", Posterior = "transparent"), #make posterior transparent
+                              name = NULL)  # Remove the legend title 
   
-
-
-
-taupost_posterior(beta = beta,
-                  Sigma = sigma,
-                  Vdelta = V,
-                  tVec = tVec, Vtaupost = NULL,
-                  referencePeriod = referencePeriod)$eventPlot +
-  ylim(-0.2,0.4)
+ggsave(here("Figures/bz-without-posterior.png"),
+       width = 6, height = 4)
 
 
 ## The code below calculates the posterior in two ways:

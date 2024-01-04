@@ -158,8 +158,8 @@ taupost_posterior <- function(beta,
     ggplot2::geom_errorbar(width = 0.1,  # Adjust this value for horizontal bar width
                            position = ggplot2::position_dodge(width = dodge_width)) +
     ggplot2::scale_color_manual(values = c("Original" = "#D95F02", Posterior = "#666666"),
-                                name = NULL)  # Remove the legend title
-  
+                                name = NULL) +  # Remove the legend title 
+    ggplot2::xlab("Relative Time")
 
   
   # #Create tauposterior = (NA, taupost)

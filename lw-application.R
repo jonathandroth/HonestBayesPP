@@ -49,6 +49,8 @@ taupost_posterior(beta = beta,
                   Vtaupost = NULL,
                   referencePeriod = referencePeriod)
 
+result$eb_params <- eb_params
+
 return(result)
 
 }

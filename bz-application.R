@@ -4,6 +4,7 @@ library(ggplot2)
 
 source(here('taupost_posterior.R'))
 source(here('create_V_AR1.R'))
+source(here('fte_theme.R'))
 
 #Load Benzarti Carloni results
 bz <- readRDS(here("Data/resultsObject-BenzartiCarloni-profits.rds"))
@@ -29,7 +30,9 @@ taupost_posterior(beta = beta,
 eventPlot_withPosterior <-
   posteriorResults$eventPlot +
   ylim(-0.2,0.4) +
-  scale_x_continuous(breaks = -4:4)
+  scale_x_continuous(breaks = -4:4) +
+  fte_theme()+
+  ggplot2::theme(legend.position = c(0.25,0.75))
 
 ggsave(here("Figures/bz-with-posterior.png"),
        width = 6, height = 4)
@@ -38,6 +41,7 @@ eventPlot_withoutPosterior <-
   eventPlot_withPosterior + 
   ggplot2::scale_color_manual(values = c(Original = "#D95F02", Posterior = "transparent"), #make posterior transparent
                               name = NULL)  # Remove the legend title 
+
   
 ggsave(here("Figures/bz-without-posterior.png"),
        width = 6, height = 4)

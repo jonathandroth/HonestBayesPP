@@ -5,6 +5,7 @@ library(ggplot2)
 source(here('taupost_posterior.R'))
 source(here('create_V_AR1.R'))
 source(here('eb_params_ar1.R'))
+source(here('fte_theme.R'))
 
 #Load Benzarti Carloni results
 
@@ -49,6 +50,7 @@ taupost_posterior(beta = beta,
                   Vtaupost = NULL,
                   referencePeriod = referencePeriod)
 
+eb_params$sigma <- sqrt(eb_params$sigmasq)
 result$eb_params <- eb_params
 
 return(result)
@@ -57,7 +59,10 @@ return(result)
 
 eventPlot_withPosterior_men <- 
 lw_results_fn(lw_men)$eventPlot +
-  xlim(-10,10) + ylim(-7,3)
+  xlim(-10,10.5) + ylim(-7,3) +
+  fte_theme()+
+  ggplot2::theme(legend.position = c(0.25,0.25))
+
 
 ggsave(here("Figures/lz-men-with-posterior.png"),
        width = 6, height = 4)
@@ -72,10 +77,16 @@ ggsave(here("Figures/lz-men-without-posterior.png"),
        width = 6, height = 4)
 
 
+#Male EB Params
+lw_results_fn(lw_men)$eb_params
+
 
 eventPlot_withPosterior_women <- 
 lw_results_fn(lw_women)$eventPlot +
-  xlim(-10,10) + ylim(-3,6)
+  xlim(-10,10.5) + ylim(-3,6) +
+  fte_theme()+
+  ggplot2::theme(legend.position = c(0.25,0.75))
+
 
 ggsave(here("Figures/lz-women-with-posterior.png"),
        width = 6, height = 4)
@@ -89,3 +100,5 @@ eventPlot_withoutPosterior_women <-
 ggsave(here("Figures/lz-women-without-posterior.png"),
        width = 6, height = 4)
 
+#Female EB Params
+lw_results_fn(lw_women)$eb_params

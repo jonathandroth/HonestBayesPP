@@ -104,7 +104,7 @@ taupost_posterior <- function(beta,
     
     #Weights on betapre and betapost that give E[delta | beta]
     Wpost <- diag(numPostPeriods)
-    Wpre <- t(GammaV)
+    Wpre <- -t(GammaV)
     W <- matrix(NA, ncol = numPrePeriods + numPostPeriods, nrow = numPostPeriods)
     W[, prePeriodIndices] <- Wpre
     W[, postPeriodIndices] <- Wpost

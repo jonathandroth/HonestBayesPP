@@ -48,8 +48,10 @@ if(useMLE){
   return(list(mu = mu, sigmasq = sigmasq))
 }
 
-
-#XX this assumes that betaPre is ordered and the referencePeriod is afterwards
+#' @description
+#'  This function takes beta, Sigma, prePeriodIndices and computes the vector of first-differences for betapre
+#' Note that the function currently assumes that betaPre is ordered chronologically
+#' and the referencePeriod is afterwards
 calc_w <- 
 function(beta, Sigma, prePeriodIndices){
   
